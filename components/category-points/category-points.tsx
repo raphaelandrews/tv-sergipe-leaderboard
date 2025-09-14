@@ -13,37 +13,37 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { categoryZodEnum, type Podium } from "@/db/schema";
-import { columns, type ClubWithMedals } from "./columns";
+import { columns, type ClubWithPoints } from "./columns";
 import { DataTable } from "@/components/ui/data-table";
 
-type ClubMedalData = {
+type ClubPointData = {
   id: string;
   name: string;
-  medals: Podium[];
+  podiums: Podium[];
 };
 
-type ClubsMedalsProps = {
-  medals: ClubMedalData[];
+type ClubsPointsProps = {
+  pointsData: ClubPointData[];
   isLoading: boolean;
   isError: boolean;
 };
 
-export function ClubsMedals({
-  medals: initialMedals,
+export function CategoryPoints({
+  pointsData: initialPointsData,
   isLoading,
   isError,
-}: ClubsMedalsProps) {
+}: ClubsPointsProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
     undefined
   );
 
-  const clubsWithMedals: ClubWithMedals[] = useMemo(() => {
-    if (!initialMedals?.length) {
+  const clubsWithPoints: ClubWithPoints[] = useMemo(() => {
+    if (!initialPointsData?.length) {
       return [];
     }
 
-    const filteredClubs = initialMedals.filter((club) => {
+    const filteredClubs = initialPointsData.filter((club) => {
       const matchesSearch =
         searchTerm.trim() === "" ||
         club.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -52,45 +52,31 @@ export function ClubsMedals({
 
     const result = filteredClubs
       .map((club) => {
-        const clubPodiums = club.medals.filter((podium) => {
-          return !selectedCategory || podium.category === selectedCategory;
-        });
-
-        const medals = {
-          gold: clubPodiums.filter((p) => p?.place === "1").length,
-          silver: clubPodiums.filter((p) => p?.place === "2").length,
-          bronze: clubPodiums.filter((p) => p?.place === "3").length,
-        };
-
-        return { ...club, medals };
+        const clubPodiums = club.podiums.filter(
+          (podium) => !selectedCategory || podium.category === selectedCategory
+        );
+        const points = clubPodiums.reduce((sum, p) => sum + p.points, 0);
+        return { ...club, points };
       })
-      .sort((a, b) => {
-        if (b.medals.gold !== a.medals.gold) {
-          return b.medals.gold - a.medals.gold;
-        }
-        if (b.medals.silver !== a.medals.silver) {
-          return b.medals.silver - a.medals.silver;
-        }
-        return b.medals.bronze - a.medals.bronze;
-      });
+      .sort((a, b) => b.points - a.points);
 
     return result;
-  }, [initialMedals, searchTerm, selectedCategory]);
+  }, [initialPointsData, searchTerm, selectedCategory]);
 
   if (isLoading) {
     return (
       <>
         <div className="flex justify-between items-center">
           <CardTitle className="flex items-center gap-2">
-            🏅 Leaderboard <Badge className="rounded-sm">?</Badge>
+            📊 Points <Badge className="rounded-sm">?</Badge>
           </CardTitle>
         </div>
         <div className="w-full mt-4">
           <div className="animate-pulse space-y-4">
             <div className="h-10 bg-ground rounded"></div>
-            {Array.from({ length: 5 }).map((_, i) => (
+            {Array.from({ length: 5 }).map((_, _i) => (
               <div
-                key={`loading-placeholder-${i}-${Math.random()}`}
+                key={`loading-skeleton-${crypto.randomUUID()}`}
                 className="h-16 bg-ground rounded"
               ></div>
             ))}
@@ -119,8 +105,8 @@ export function ClubsMedals({
     <div>
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <CardTitle className="flex items-center gap-2">
-          🏅 Quadro de Medalhas{" "}
-          <Badge className="rounded-sm">{clubsWithMedals.length}</Badge>
+          📊 Pontos{" "}
+          <Badge className="rounded-sm">{clubsWithPoints.length}</Badge>
         </CardTitle>
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1 max-w-[140px] bg-ground rounded-md">
@@ -153,7 +139,7 @@ export function ClubsMedals({
         </div>
       </div>
       <div className="w-full mt-4">
-        {clubsWithMedals.length === 0 ? (
+        {clubsWithPoints.length === 0 ? (
           <div className="text-center py-8">
             {searchTerm ? (
               <div>
@@ -161,7 +147,7 @@ export function ClubsMedals({
                   No clubs found matching "{searchTerm}"
                 </p>
                 <p className="text-sm mt-2">
-                  Try searching with different keywords or clear the search
+                  Try searching with different keywords
                 </p>
               </div>
             ) : (
@@ -171,7 +157,7 @@ export function ClubsMedals({
             )}
           </div>
         ) : (
-          <DataTable columns={columns} data={clubsWithMedals} />
+          <DataTable columns={columns} data={clubsWithPoints} />
         )}
       </div>
     </div>

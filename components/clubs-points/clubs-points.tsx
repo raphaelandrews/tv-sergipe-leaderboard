@@ -12,9 +12,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { categoryZodEnum, type Podium } from "@/db/schema";
+import { type Podium } from "@/db/schema";
 import { columns, type ClubWithPoints } from "./columns";
 import { DataTable } from "@/components/ui/data-table";
+
+const categoryGroups = {
+  "Sub 18": [
+    "Sub 18 Masculino",
+    "Sub 18 Feminino",
+    "Sub 18 Masculino Equipes",
+    "Sub 18 Feminino Equipes",
+  ],
+  "Sub 16": [
+    "Sub 16 Masculino",
+    "Sub 16 Feminino",
+    "Sub 16 Masculino Equipes",
+    "Sub 16 Feminino Equipes",
+  ],
+  "Sub 14": [
+    "Sub 14 Masculino",
+    "Sub 14 Feminino",
+    "Sub 14 Masculino Equipes",
+    "Sub 14 Feminino Equipes",
+  ],
+  "Sub 12": [
+    "Sub 12 Masculino",
+    "Sub 12 Feminino",
+    "Sub 12 Masculino Equipes",
+    "Sub 12 Feminino Equipes",
+  ],
+  "Sub 10": [
+    "Sub 10 Masculino",
+    "Sub 10 Feminino",
+    "Sub 10 Masculino Equipes",
+    "Sub 10 Feminino Equipes",
+  ],
+  "Sub 8": [
+    "Sub 8 Masculino",
+    "Sub 8 Feminino",
+    "Sub 8 Masculino Equipes",
+    "Sub 8 Feminino Equipes",
+  ],
+};
 
 type ClubPointData = {
   id: string;
@@ -34,9 +73,9 @@ export function ClubsPoints({
   isError,
 }: ClubsPointsProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
-    undefined
-  );
+  const [selectedCategoryGroup, setSelectedCategoryGroup] = useState<
+    string | undefined
+  >(undefined);
 
   const clubsWithPoints: ClubWithPoints[] = useMemo(() => {
     if (!initialPointsData?.length) {
@@ -44,22 +83,29 @@ export function ClubsPoints({
     }
 
     const filteredClubs = initialPointsData.filter((club) => {
-      const matchesSearch = searchTerm.trim() === "" || club.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch =
+        searchTerm.trim() === "" ||
+        club.name.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesSearch;
     });
 
     const result = filteredClubs
       .map((club) => {
-        const clubPodiums = club.podiums.filter(
-          (podium) => !selectedCategory || podium.category === selectedCategory
-        );
+        const clubPodiums = club.podiums.filter((podium) => {
+          if (!selectedCategoryGroup) return true;
+          const categoriesInGroup =
+            categoryGroups[
+              selectedCategoryGroup as keyof typeof categoryGroups
+            ];
+          return categoriesInGroup?.includes(podium.category);
+        });
         const points = clubPodiums.reduce((sum, p) => sum + p.points, 0);
         return { ...club, points };
       })
       .sort((a, b) => b.points - a.points);
 
     return result;
-  }, [initialPointsData, searchTerm, selectedCategory]);
+  }, [initialPointsData, searchTerm, selectedCategoryGroup]);
 
   if (isLoading) {
     return (
@@ -73,7 +119,10 @@ export function ClubsPoints({
           <div className="animate-pulse space-y-4">
             <div className="h-10 bg-ground rounded"></div>
             {Array.from({ length: 5 }).map((_, _i) => (
-              <div key={`loading-skeleton-${crypto.randomUUID()}`} className="h-16 bg-ground rounded"></div>
+              <div
+                key={`loading-skeleton-${crypto.randomUUID()}`}
+                className="h-16 bg-ground rounded"
+              ></div>
             ))}
           </div>
         </div>
@@ -100,33 +149,33 @@ export function ClubsPoints({
     <div>
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <CardTitle className="flex items-center gap-2">
-          📊 Points {" "}
+          📊 Pontos{" "}
           <Badge className="rounded-sm">{clubsWithPoints.length}</Badge>
         </CardTitle>
         <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1 max-w-[140px]">
+          <div className="relative flex-1 max-w-[140px] bg-ground rounded-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" />
             <Input
-              placeholder="Search..."
+              placeholder="Procurar..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 border-0"
             />
           </div>
           <Select
-            value={selectedCategory}
+            value={selectedCategoryGroup}
             onValueChange={(value) =>
-              setSelectedCategory(value === "all" ? undefined : value)
+              setSelectedCategoryGroup(value === "all" ? undefined : value)
             }
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select a category" />
+              <SelectValue placeholder="Selecione a categoria" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categoryZodEnum.options.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
+              <SelectItem value="all">Todas categorias</SelectItem>
+              {Object.keys(categoryGroups).map((group) => (
+                <SelectItem key={group} value={group}>
+                  {group}
                 </SelectItem>
               ))}
             </SelectContent>

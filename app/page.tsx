@@ -4,6 +4,7 @@ import { ClubsMedals } from "@/components/clubs-medals/clubs-medals";
 import { ClubsPoints } from "@/components/clubs-points/clubs-points";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Podium } from "@/db/schema";
+import { CategoryPoints } from "@/components/category-points/category-points";
 
 type ClubMedalData = {
   id: string;
@@ -18,23 +19,20 @@ type ClubPointData = {
 };
 
 export default async function Home() {
-	const [clubs, podiums] = await Promise.all([
-		getMedals(),
-		getPodiums(),
-	]);
+  const [clubs, podiums] = await Promise.all([getMedals(), getPodiums()]);
 
-	const processedMedals: ClubMedalData[] = clubs.map(club => ({
-		id: club.id,
-		name: club.name,
-		medals: podiums.filter(podium => podium.clubId === club.id),
-	}));
+  const processedMedals: ClubMedalData[] = clubs.map((club) => ({
+    id: club.id,
+    name: club.name,
+    medals: podiums.filter((podium) => podium.clubId === club.id),
+  }));
 
-	const processedPoints: ClubPointData[] = clubs.map(club => ({
-		id: club.id,
-		name: club.name,
-		podiums: podiums.filter(podium => podium.clubId === club.id),
-	}));
-  
+  const processedPoints: ClubPointData[] = clubs.map((club) => ({
+    id: club.id,
+    name: club.name,
+    podiums: podiums.filter((podium) => podium.clubId === club.id),
+  }));
+
   return (
     <main className="!max-w-[960px] container relative min-h-screen pb-12">
       <div className="flex flex-col items-left gap-2 py-8 text-left md:py-16 lg:py-20">
@@ -52,25 +50,33 @@ export default async function Home() {
       </div>
 
       <Tabs defaultValue="medals" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="medals">Medals</TabsTrigger>
-            <TabsTrigger value="points">Points</TabsTrigger>
-          </TabsList>
-          <TabsContent value="medals">
+        <TabsList className="mb-4">
+          <TabsTrigger value="medals">Medalhas</TabsTrigger>
+          <TabsTrigger value="points">Categorias</TabsTrigger>
+          <TabsTrigger value="categories">Subcategorias</TabsTrigger>
+        </TabsList>
+        <TabsContent value="medals">
           <ClubsMedals
             medals={processedMedals}
             isLoading={false}
             isError={false}
           />
-          </TabsContent>
-          <TabsContent value="points">
+        </TabsContent>
+        <TabsContent value="points">
           <ClubsPoints
             pointsData={processedPoints}
             isLoading={false}
             isError={false}
           />
-          </TabsContent>
-        </Tabs>
+        </TabsContent>
+        <TabsContent value="categories">
+          <CategoryPoints
+            pointsData={processedPoints}
+            isLoading={false}
+            isError={false}
+          />
+        </TabsContent>
+      </Tabs>
     </main>
   );
 }

@@ -24,14 +24,14 @@ export const columns: ColumnDef<ClubWithMedals>[] = [
   },
   {
     accessorKey: "name",
-    header: "Name",
+    header: "Nome",
     cell: ({ row }) => (
       <span className="font-semibold text-nowrap">{row.getValue("name")}</span>
     ),
   },
   {
     accessorKey: "medals.gold",
-    header: () => <div className="text-center">Gold</div>,
+    header: () => <div className="text-center">Ouro</div>,
     cell: ({ row }) => (
       <div className="rounded-sm text-center">
         {row.original.medals.gold}
@@ -40,7 +40,7 @@ export const columns: ColumnDef<ClubWithMedals>[] = [
   },
   {
     accessorKey: "medals.silver",
-    header: () => <div className="text-center">Silver</div>,
+    header: () => <div className="text-center">Prata</div>,
     cell: ({ row }) => (
       <div className="rounded-sm text-center">
         {row.original.medals.silver}
