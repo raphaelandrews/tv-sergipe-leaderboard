@@ -16,6 +16,33 @@ import { categoryZodEnum, type Podium } from "@/db/schema";
 import { columns, type ClubWithMedals } from "./columns";
 import { DataTable } from "@/components/ui/data-table";
 
+const categoryGroups = {
+  "Sub 18": [
+    "Sub 18 Masculino", "Sub 18 Feminino",
+    "Sub 18 Masculino Equipes", "Sub 18 Feminino Equipes"
+  ],
+  "Sub 16": [
+    "Sub 16 Masculino", "Sub 16 Feminino",
+    "Sub 16 Masculino Equipes", "Sub 16 Feminino Equipes"
+  ],
+  "Sub 14": [
+    "Sub 14 Masculino", "Sub 14 Feminino",
+    "Sub 14 Masculino Equipes", "Sub 14 Feminino Equipes"
+  ],
+  "Sub 12": [
+    "Sub 12 Masculino", "Sub 12 Feminino",
+    "Sub 12 Masculino Equipes", "Sub 12 Feminino Equipes"
+  ],
+  "Sub 10": [
+    "Sub 10 Masculino", "Sub 10 Feminino",
+    "Sub 10 Masculino Equipes", "Sub 10 Feminino Equipes"
+  ],
+  "Sub 8": [
+    "Sub 8 Masculino", "Sub 8 Feminino",
+    "Sub 8 Masculino Equipes", "Sub 8 Feminino Equipes"
+  ],
+};
+
 type ClubMedalData = {
   id: string;
   name: string;
@@ -28,13 +55,13 @@ type ClubsMedalsProps = {
   isError: boolean;
 };
 
-export function ClubsMedals({
+export function CategoryMedals({
   medals: initialMedals,
   isLoading,
   isError,
 }: ClubsMedalsProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+  const [selectedCategoryGroup, setSelectedCategoryGroup] = useState<string | undefined>(
     undefined
   );
 
@@ -53,7 +80,9 @@ export function ClubsMedals({
     const result = filteredClubs
       .map((club) => {
         const clubPodiums = club.medals.filter((podium) => {
-          return !selectedCategory || podium.category === selectedCategory;
+          if (!selectedCategoryGroup) return true;
+          const categoriesInGroup = categoryGroups[selectedCategoryGroup as keyof typeof categoryGroups];
+          return categoriesInGroup && categoriesInGroup.includes(podium.category);
         });
 
         const medals = {
@@ -75,7 +104,7 @@ export function ClubsMedals({
       });
 
     return result;
-  }, [initialMedals, searchTerm, selectedCategory]);
+  }, [initialMedals, searchTerm, selectedCategoryGroup]);
 
   if (isLoading) {
     return (
@@ -133,19 +162,19 @@ export function ClubsMedals({
             />
           </div>
           <Select
-            value={selectedCategory}
+            value={selectedCategoryGroup}
             onValueChange={(value) =>
-              setSelectedCategory(value === "all" ? undefined : value)
+              setSelectedCategoryGroup(value === "all" ? undefined : value)
             }
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Selecione a categoria" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas categorias</SelectItem>
-              {categoryZodEnum.options.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
+              <SelectItem value="all">Todos os grupos</SelectItem>
+              {Object.keys(categoryGroups).map((group) => (
+                <SelectItem key={group} value={group}>
+                  {group}
                 </SelectItem>
               ))}
             </SelectContent>

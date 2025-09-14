@@ -5,6 +5,7 @@ import { ClubsPoints } from "@/components/clubs-points/clubs-points";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Podium } from "@/db/schema";
 import { CategoryPoints } from "@/components/category-points/category-points";
+import { CategoryMedals } from "@/components/category-medals/category-medals";
 
 type ClubMedalData = {
   id: string;
@@ -49,14 +50,22 @@ export default async function Home() {
         </div>
       </div>
 
-      <Tabs defaultValue="medals" className="w-full">
+      <Tabs defaultValue="club-medals" className="w-full">
         <TabsList className="mb-4">
-          <TabsTrigger value="medals">Medalhas</TabsTrigger>
+          <TabsTrigger value="club-medals">Medalhas</TabsTrigger>
+          <TabsTrigger value="category-medals">Medalhas Categorias</TabsTrigger>
           <TabsTrigger value="points">Categorias</TabsTrigger>
           <TabsTrigger value="categories">Subcategorias</TabsTrigger>
         </TabsList>
-        <TabsContent value="medals">
+        <TabsContent value="club-medals">
           <ClubsMedals
+            medals={processedMedals}
+            isLoading={false}
+            isError={false}
+          />
+        </TabsContent>
+        <TabsContent value="category-medals">
+          <CategoryMedals
             medals={processedMedals}
             isLoading={false}
             isError={false}
